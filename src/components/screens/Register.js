@@ -23,7 +23,7 @@ class Register extends Component {
     register(){ //Navigate to Main
         //send credentials to server
         //if signup success
-        alert(JSON.stringify(this.state.credentialsgt))
+        alert(JSON.stringify(this.state.credentials))
         this.props.navigation.navigate('main');
         //else error msg
         
