@@ -1,12 +1,14 @@
 import React, { Component } from 'react';
 import {TouchableOpacity, Text, TextInput, Button, View, StyleSheet} from "react-native"; 
+import config from '../../config/index'
+
 
 class Register extends Component {
     constructor(){
         super();
         this.state = {
             credentials: {
-                username: "",
+                email: "",
                 password: ""
             }
         }
@@ -20,12 +22,28 @@ class Register extends Component {
         })
     }
 
-    register(){ //Navigate to Main
-        //send credentials to server
-        //if signup success
-        alert(JSON.stringify(this.state.credentials))
-        this.props.navigation.navigate('main');
-        //else error msg
+    register(){
+        fetch(config.baseUrl + 'login', {
+            method: 'POST',
+            headers: {
+                Accept: 'application/json',
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(this.state.credentials),
+        })
+        .then(response => response.json())
+        .then(jsonResponce => {
+            if(jsonResponce.confirmation === "success"){
+                this.props.navigation.navigate('main')
+            }else{
+                throw new Error({
+                    message: "something went wrong"
+                })
+            }
+        })
+        .catch(err => {
+            alert(err);
+        })
         
     }
 
@@ -44,9 +62,9 @@ class Register extends Component {
             <Text>Register PAGE</Text>
             <TextInput
                 autoCorrect={false}
-                value={this.state.credentials.username}
-                onChangeText={text => this.updateText(text, 'username')}
-                placeholder="Username" 
+                value={this.state.credentials.email}
+                onChangeText={text => this.updateText(text, 'email')}
+                placeholder="email" 
                 style={styles.input}
             />
             <TextInput
