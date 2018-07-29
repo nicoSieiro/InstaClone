@@ -1,66 +1,103 @@
 import React, { Component } from 'react';
-import {TouchableOpacity, Text, TextInput, Button, View, StyleSheet} from "react-native"; 
+import {TouchableOpacity, Text, TextInput, View, StyleSheet} from "react-native"; 
 import config from '../../config/index'
-
+import {Container, Content, Header, Form, Input, item, Button, Label, Item, InputGroup} from 'native-base';
+import * as firebase from 'firebase';
 
 class Register extends Component {
-    constructor(){
-        super();
+    constructor(props){
+        super(props);
         this.state = {
-            credentials: {
-                email: "",
-                password: ""
-            }
+            email: "",
+            password: ""
+        }
+        console.log(this.props)
+    }
+
+
+
+    login = (email, password) => {
+        console.log(email + " - " + password)
+        try{
+            firebase.auth().signInWithEmailAndPassword(email,password).then((registration) => {
+                console.log(registration)
+                var user = firebase.auth().currentUser;
+                var name, email, photoUrl, uid, emailVerified;
+
+                if (user != null) {
+                    name = user.displayName;
+                    email = user.email;
+                    photoUrl = user.photoURL;
+                    emailVerified = user.emailVerified;
+                    uid = user.uid;
+                    
+                    this.props.navigation.navigate('main');
+                }else{
+                    alert("Something went wrong...")
+                }
+
+            })
+        }
+        catch(error){
+            console.log(error)
         }
     }
 
-    updateText(text, field){
-        let newCredentials = Object.assign(this.state.credentials)
-        newCredentials[field] = text;
-        this.setState({
-            crendentials: newCredentials
-        })
-    }
-
-    register(){
-        fetch(config.baseUrl + 'login', {
-            method: 'POST',
-            headers: {
-                Accept: 'application/json',
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(this.state.credentials),
-        })
-        .then(response => response.json())
-        .then(jsonResponce => {
-            if(jsonResponce.confirmation === "success"){
-                this.props.navigation.navigate('main')
-            }else{
-                throw new Error({
-                    message: "something went wrong"
-                })
+    signUp = (email, password) => {
+        try{
+            if(this.state.password.length < 6){
+                alert("Please enter atleast 6 characters")
+                return;
             }
-        })
-        .catch(err => {
-            alert(err);
-        })
-        
+            firebase.auth().createUserWithEmailAndPassword(email,password)
+        }
+        catch(error){
+            console.log(error)
+        }
     }
 
   render() {
     return (
-        <View 
-            style={{
-                height: 100 + "%",
-                width: 100 + "%",
-                flex: 1,
-                justifyContent: "center",
-                alignItems: "center",
-                //backgroundColor: "rgb(252,61,57)"
-            }}
-        >
+       <Container style={styles.container}>
             <Text>Register PAGE</Text>
-            <TextInput
+            <Form>
+                <Item floatingLabel>
+                    <Label>Email</Label>
+                    <Input
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                        onChangeText={(email) => this.setState({email})}
+                    />
+                </Item>
+                <Item floatingLabel>
+                    <Label>Password</Label>
+                    <Input
+                        secureTextEntry={true}
+                        autoCorrect={false}
+                        autoCapitalize="none"
+                        onChangeText={(password) => this.setState({password})}
+                    />
+                </Item>
+                <Button style={{marginTop:10}} 
+                    full 
+                    rounded 
+                    success
+                    onPress = {() => this.login(this.state.email,this.state.password)}
+                >
+                    <Text style={{color:"white"}}>Login</Text>
+                </Button>
+                <Button style={{marginTop:10}} 
+                    full 
+                    rounded 
+                    primary
+                    onPress = {() => this.signUp(this.state.email,this.state.password)}
+                >
+                    <Text style={{color:"white"}}>Signup</Text>
+                </Button>
+            </Form>
+
+
+            {/* <TextInput
                 autoCorrect={false}
                 value={this.state.credentials.email}
                 onChangeText={text => this.updateText(text, 'email')}
@@ -79,18 +116,18 @@ class Register extends Component {
                     this.register();
                 }} 
                 title="Signup"
-            />
-        </View>
+            /> */}
+        </Container>
     )
   }
 };
 
 const styles = StyleSheet.create({
-    input:{
-        height: 50,
-        width: 100 + "%",
-        paddingHorizontal: 50,
-
+    container:{
+        flex:1,
+        backgroundColor:'#fff',
+        justifyContent: 'center',
+        padding:10,
     }
 })
 
